@@ -11,9 +11,9 @@ document.addEventListener('click',e=>{const b=e.target.closest('.pill[data-a]');
  if(a=='mS'||a=='yS'){const s=DS[a];DS[a]=s.includes(v)?s.filter(x=>x!=v):[...s,v]}else if(a=='mAvg'||a=='yAvg')DS[a]=!DS[a];else DS[a]=v;saveDS();dash()});
 function seriesDS(G,sel,avg){const out=[];sel.forEach(k=>{const d=G.map(g=>k=='inc'?g.inc:k=='exp'?g.exp:g.inc-g.exp);
   out.push(k=='net'?{type:'line',label:LBL[k],data:d,borderColor:COL.net,backgroundColor:COL.net,tension:.3,order:0}:{label:LBL[k],data:d,backgroundColor:COL[k]+'cc',borderRadius:4,order:2});
-  if(avg&&G.length){const m=d.reduce((s,x)=>s+x,0)/d.length;out.push({type:'line',label:'⌀ '+LBL[k],data:G.map(()=>m),borderColor:k=='net'?COL.avg:COL[k],borderDash:[6,4],borderWidth:1.5,pointRadius:0,order:1})}});return out}
-function dash(){if(!D.length)return;drawPills();const y=$('#dY').value,c=$('#dC').value,t=$('#dT').value,x=$('#dXT').checked;
- const base=D.filter(r=>(!c||r._t.curId==c)&&(!t||r._t.typeId==t)&&(!x||!XCAT.test(r.Category))),R=base.filter(r=>!y||r.Date.startsWith(y));
+  if(avg&&G.length){const m=d.reduce((s,x)=>s+x,0)/d.length;out.push({type:'line',_avg:m,label:'⌀ '+LBL[k],data:G.map(()=>m),borderColor:k=='net'?COL.avg:COL[k],borderDash:[6,4],borderWidth:1.5,pointRadius:0,order:1})}});return out}
+function dash(){if(!D.length)return;drawPills();const y=$('#dY').value,c=$('#dC').value,t=$('#dT').value,x=$('#dXT').checked,ca=$('#dCat').value,pm=$('#dP').value;
+ const base=D.filter(r=>(!c||r._t.curId==c)&&(!t||r._t.typeId==t)&&(!ca||r._t.catId==ca)&&(!pm||r._t.payId==pm)&&(!x||!XCAT.test(r.Category))),R=base.filter(r=>!y||r.Date.startsWith(y));
  const inc=R.reduce((s,r)=>s+(r.Amount>0?r.Amount:0),0),exp=R.reduce((s,r)=>s+(r.Amount<0?-r.Amount:0),0),months=new Set(R.map(r=>r.Date.slice(0,7))).size||1;
  $('#dK').innerHTML=[['รายรับ',fmt(inc),'in'],['รายจ่าย',fmt(exp),'ex'],['สุทธิ',fmt(inc-exp),inc>=exp?'in':'ex'],['จ่ายเฉลี่ย/เดือน',fmt(exp/months),''],['จำนวน trx',R.length.toLocaleString(),'']].map(([a,b,k])=>`<div class="kpi"><span>${a}</span><b class="${k}">${b}</b></div>`).join('');
  let Ms=group(y?R:base,r=>r.Date.slice(0,7)).sort((a,b)=>a.k<b.k?-1:1);if(!y&&DS.mR!='all')Ms=Ms.slice(-+DS.mR);
@@ -24,4 +24,11 @@ function dash(){if(!D.length)return;drawPills();const y=$('#dY').value,c=$('#dC'
  $('#dV').innerHTML=tbl(['Vendor','ครั้ง','รายจ่าย'],V.map(g=>[esc(g.k),g.n,fmt(g.exp)]),[1,2]);
  let Y=group(base,r=>r.Date.slice(0,4)).sort((a,b)=>a.k<b.k?-1:1);if(DS.yR!='all')Y=Y.slice(-+DS.yR);
  chart('cYr',{type:'bar',data:{labels:Y.map(g=>g.k),datasets:seriesDS(Y,DS.yS,DS.yAvg)},options:{interaction:{mode:'index',intersect:false}}})}
-['dY','dC','dT','dXT'].forEach(i=>$('#'+i).onchange=dash);
+['dY','dC','dT','dCat','dP','dXT'].forEach(i=>$('#'+i).onchange=dash);
+// draw average value at the end of each avg line
+const avgLabel={id:'avgLabel',afterDatasetsDraw(ch){const x=ch.ctx,a=ch.chartArea;ch.data.datasets.forEach((ds,i)=>{if(ds._avg==null||!ch.isDatasetVisible(i))return;const pts=ch.getDatasetMeta(i).data;if(!pts.length)return;
+ const Y=pts[pts.length-1].y,t='เฉลี่ย '+fmt(ds._avg),c=ds.borderColor;x.save();x.font='600 11px '+getComputedStyle(document.body).fontFamily;
+ const w=x.measureText(t).width+14,h=18,X=a.right-w-4,top=Math.max(a.top,Y-h-3);
+ x.globalAlpha=.15;x.fillStyle=c;x.beginPath();x.roundRect?x.roundRect(X,top,w,h,9):x.rect(X,top,w,h);x.fill();
+ x.globalAlpha=1;x.fillStyle=c;x.textBaseline='middle';x.textAlign='right';x.fillText(t,a.right-11,top+h/2);x.restore()})}};
+if(window.Chart)Chart.register(avgLabel);
