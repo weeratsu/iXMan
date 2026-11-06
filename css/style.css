@@ -51,16 +51,16 @@ canvas{max-width:100%}.tw{-webkit-overflow-scrolling:touch}
 dialog{width:min(440px,94vw);max-height:90vh;overflow:auto}
 @media(max-width:1100px){.grid2{grid-template-columns:1fr}}
 @media(max-width:768px){
- body{display:block;height:auto;min-height:100vh}
- nav{position:sticky;top:0;z-index:20;width:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;border-right:0;border-bottom:1px solid var(--ln)}
- nav h1{margin:0;font-size:16px;flex:1}
- nav label.mu{display:flex!important;align-items:center;gap:4px;margin:0!important;font-size:0!important}
- nav label.mu select{width:auto!important;margin:0!important;font-size:12px;padding:5px 26px 5px 8px}
- #hideBtn{width:auto!important;margin:0!important;padding:6px 10px;font-size:12px}
+ body{display:block;height:auto;min-height:100vh;padding-bottom:64px}
+ nav{position:sticky;top:0;z-index:20;width:auto;display:flex;align-items:center;gap:8px;padding:8px 12px;border-right:0;border-bottom:1px solid var(--ln)}
+ nav h1{margin:0;font-size:16px;flex:1;white-space:nowrap}
+ nav label.mu{display:flex!important;align-items:center;margin:0!important;font-size:0!important}
+ nav label.mu select{width:auto!important;margin:0!important;font-size:12px;padding:6px 26px 6px 10px}
+ #hideBtn{width:auto!important;margin:0!important;padding:6px 10px;font-size:12px;white-space:nowrap}
  nav p#cnt{display:none}
- nav button[data-s]{order:10;width:auto;display:inline-block;margin:0;padding:7px 10px;font-size:12px;white-space:nowrap;background:var(--bg)}
- nav{overflow-x:auto}
- nav button[data-s].on{background:var(--ac);color:var(--bt)}
+ .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;overflow-x:auto;min-width:0;background:var(--pn);border-top:1px solid var(--ln);padding:4px 4px calc(4px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px #0001}
+ .tabs button{flex:1 0 auto!important;width:auto;margin:0;padding:6px 8px;font-size:11px;text-align:center;white-space:nowrap;border-radius:8px;color:var(--mu)}
+ .tabs button.on{background:var(--hv);color:var(--ac);font-weight:600}
  main{padding:10px;overflow:visible}
  .row{gap:6px}.row>select,.row>input:not([type=checkbox]){flex:1 1 140px;min-width:0}
  #q{flex-basis:100%!important}
