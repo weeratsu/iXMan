@@ -14,5 +14,5 @@ function ensure(kind,name,parentId,newM){name=(name||'').trim();if(!name)return 
 function resolve(){D=T.map(t=>({ID:t.ID,Date:t.date,Type:nm(t.typeId),Category:nm(t.catId),Subcategory:nm(t.subId),Vendor:nm(t.vendorId),Payment:nm(t.payId),Currency:nm(t.curId),Amount:t.amount,Note:t.note||'',_t:t}))}
 async function loadAll(){T=await DB.all('trx');M=new Map((await DB.all('master')).map(m=>[m.id,m]));reindex();resolve()}
 function fromNames(o,newM){const catId=ensure('category',o.Category,'',newM);
- return{ID:o.ID||crypto.randomUUID().toUpperCase(),date:o.Date,typeId:ensure('type',o.Type,'',newM),catId,subId:ensure('subcategory',o.Subcategory,catId,newM),vendorId:ensure('vendor',o.Vendor,'',newM),payId:ensure('payment',o.Payment,'',newM),curId:ensure('currency',o.Currency||'THB','',newM),amount:+o.Amount||0,note:o.Note||''}}
+ return{ID:o.ID||crypto.randomUUID().toUpperCase(),date:o.Date,typeId:ensure('type',o.Type,'',newM),catId,subId:ensure('subcategory',o.Subcategory,catId,newM),vendorId:ensure('vendor',o.Vendor,'',newM),payId:ensure('payment',o.Payment,'',newM),curId:ensure('currency',o.Currency||'THB','',newM),amount:+o.Amount||0,note:o.Note||'',...(o.edited?{edited:true}:{})}}
 async function saveNamed(objs){const newM=[],rows=objs.map(o=>fromNames(o,newM));if(newM.length)await DB.put('master',newM);await DB.put('trx',rows);return rows}

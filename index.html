@@ -11,15 +11,16 @@
 <button data-s="dash" class="on">📊 Dashboard</button><button data-s="trx">🔎 Transactions</button>
 <button data-s="rep">📈 Reports</button><button data-s="pivot">🧮 Pivot</button><button data-s="master">🗂 Master data</button><button data-s="data">💾 Import / Export</button>
 <label class="mu" style="font-size:12px;display:block;margin-top:16px">🎨 ธีม<select id="thm" style="width:100%;margin-top:4px"><option value="light">Light</option><option value="dark">Dark</option><option value="mint">Mint</option><option value="sakura">Sakura</option><option value="midnight">Midnight</option></select></label>
+<button id="hideBtn" class="btn g" style="width:100%;margin-top:10px;justify-content:center" onclick="toggleHide()"></button>
 <p class="mu" id="cnt" style="font-size:12px;margin-top:20px"></p></nav>
 <main>
 <!-- DASHBOARD -->
 <section id="dash" class="sec on"><div class="row">ปี <select id="dY"></select> สกุลเงิน <select id="dC" class="curSel"></select> บัญชี <select id="dT" class="typSel"></select>
 <label><input type="checkbox" id="dXT" checked> ไม่รวม Transfer/Lending</label></div>
 <div class="kpis" id="dK"></div>
-<div class="card"><canvas id="cMon" height="80"></canvas></div>
-<div class="grid2"><div class="card"><h3>Top Category (รายจ่าย)</h3><canvas id="cCat"></canvas></div><div class="card"><h3>Top Vendor (รายจ่าย)</h3><div id="dV"></div></div></div>
-<div class="card"><h3>แนวโน้มรายปี</h3><canvas id="cYr" height="70"></canvas></div></section>
+<div class="card"><div class="chd"><h3>รายเดือน</h3><div class="pills" id="pMon"></div></div><canvas id="cMon" height="80"></canvas></div>
+<div class="grid2"><div class="card"><div class="chd"><h3>Top Category</h3><div class="pills" id="pCat"></div></div><canvas id="cCat"></canvas></div><div class="card"><h3>Top Vendor (รายจ่าย)</h3><div id="dV"></div></div></div>
+<div class="card"><div class="chd"><h3>แนวโน้มรายปี</h3><div class="pills" id="pYr"></div></div><canvas id="cYr" height="70"></canvas></div></section>
 <!-- TRX -->
 <section id="trx" class="sec"><div class="row">
 <input id="q" placeholder="ค้นหา vendor / note / sub / category..." style="flex:1;min-width:220px">
@@ -47,11 +48,24 @@
 <input id="mQ" placeholder="ค้นหา..."><span class="mu">คลิกชื่อ = เปลี่ยนชื่อ (trx ลิงก์ด้วย ID จึงเปลี่ยนตามทันที) · ใส่ชื่อที่มีอยู่ = merge · 🗑 = ลบรายการที่ไม่ได้ใช้</span></div><div class="card tw" id="mOut"></div></section>
 <!-- DATA -->
 <section id="data" class="sec"><div class="card"><h3>Import CSV จาก iXpensIt</h3>
-<p class="mu">รวมข้อมูลตาม ID: ID ซ้ำ = อัปเดต, ID ใหม่ = เพิ่ม (ไม่ลบรายการเดิม)</p>
-<input type="file" id="fi" accept=".csv"> <label><input type="checkbox" id="rep1"> ล้างข้อมูลเดิมก่อน import</label>
+<p class="mu">เลือกวิธีจัดการ ID ซ้ำก่อนเลือกไฟล์</p>
+<label class="btn fbtn">📂 เลือกไฟล์ CSV<input type="file" id="fi" accept=".csv" hidden></label> <select id="iMode"><option value="skip">เพิ่มเฉพาะ ID ใหม่ (ไม่แตะของเดิม)</option><option value="unedited">ทับเฉพาะ trx ที่ไม่เคยแก้ใน iXMan</option><option value="all">ทับทั้งหมดที่ ID ซ้ำ</option><option value="replace">ล้างข้อมูลเดิมแล้ว import ใหม่</option></select>
 <p id="iMsg"></p></div>
-<div class="card"><h3>Export</h3><button class="btn" onclick="expCSV(D)">Export CSV ทั้งหมด (format iXpensIt)</button>
-<button class="btn g" onclick="expJSON()">Backup JSON</button> <label class="btn g">Restore JSON<input type="file" id="fj" accept=".json" hidden></label>
+<div class="card"><h3>Export</h3>
+<div class="help" style="background:var(--hv);border-radius:8px;padding:10px 12px;margin-bottom:10px;line-height:1.7">
+<b>💡 ข้อมูลเก็บที่ไหน?</b><br>
+ข้อมูลเก็บอยู่ในเบราว์เซอร์ของเครื่องนี้เท่านั้น ไม่ได้ส่งขึ้นอินเทอร์เน็ต<br>
+• เปิดเครื่องอื่น หรือเบราว์เซอร์อื่น = ข้อมูลว่างเปล่า<br>
+• ล้างประวัติเบราว์เซอร์ หรือใช้โหมดไม่ระบุตัวตน = ข้อมูลอาจหาย<br><br>
+<b>📦 ย้ายข้อมูลไปเครื่องอื่น (3 ขั้นตอน)</b><br>
+1. เครื่องเดิม: กด <b>Backup JSON</b> จะได้ไฟล์ <code>ixman_backup_วันที่.json</code><br>
+2. ส่งไฟล์นั้นไปเครื่องใหม่ (Google Drive, LINE, อีเมล, USB)<br>
+3. เครื่องใหม่: เปิดแอป แล้วกด <b>Restore JSON</b> เลือกไฟล์นั้น<br>
+⚠️ Restore จะ<b>แทนที่ข้อมูลทั้งหมด</b>ในเครื่องใหม่<br><br>
+<b>🛟 แนะนำ:</b> กด Backup JSON เก็บไว้เป็นประจำ เช่น สัปดาห์ละครั้ง<br>
+<span class="mu">Export CSV = ไฟล์สำหรับเปิดใน Excel หรือ import กลับ (ไม่มีข้อมูล master ที่แก้ไว้ครบเท่า JSON)</span>
+</div><button class="btn" onclick="expCSV(D)">Export CSV ทั้งหมด (format iXpensIt)</button>
+<button class="btn g" onclick="expJSON()">Backup JSON</button> <label class="btn g fbtn">♻️ Restore JSON<input type="file" id="fj" accept=".json" hidden></label>
 <button class="btn r" onclick="wipe()">ลบข้อมูลทั้งหมด</button></div>
 <div class="card"><h3>คุณภาพข้อมูล</h3><div id="qa"></div></div></section>
 </main>

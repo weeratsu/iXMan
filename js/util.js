@@ -1,6 +1,7 @@
 // shared helpers
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
-const fmt=n=>n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+let HIDE=false;try{HIDE=localStorage.getItem('ixman_hide')=='1'}catch(e){}
+const fmt=n=>HIDE?'•••••':n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const uid=p=>p+'_'+crypto.randomUUID().replace(/-/g,'').slice(0,12);
 const XCAT=/transfer|lending|loan|ยืม/i;
@@ -17,4 +18,4 @@ function tbl(h,rows,num=[]){return`<table><thead><tr>${h.map((x,i)=>`<th class="
 // options: arr of strings or [value,label]
 function opts(sel,arr,all='ทั้งหมด'){const v=sel.value;sel.innerHTML=(all!==null?`<option value="">${all}</option>`:'')+arr.map(x=>Array.isArray(x)?`<option value="${esc(x[0])}">${esc(x[1])}</option>`:`<option>${esc(x)}</option>`).join('');if([...sel.options].some(o=>o.value==v))sel.value=v}
 const charts={};
-function chart(id,cfg){if(!window.Chart)return;charts[id]?.destroy();const cs=getComputedStyle(document.documentElement);Chart.defaults.color=cs.getPropertyValue('--mu').trim();Chart.defaults.borderColor=cs.getPropertyValue('--ln').trim();charts[id]=new Chart($('#'+id),cfg)}
+function chart(id,cfg){if(!window.Chart)return;charts[id]?.destroy();const cs=getComputedStyle(document.documentElement);Chart.defaults.color=cs.getPropertyValue('--mu').trim();Chart.defaults.borderColor=cs.getPropertyValue('--ln').trim();if(HIDE){cfg.options=cfg.options||{};cfg.options.plugins={...(cfg.options.plugins||{}),tooltip:{enabled:false}};if(cfg.type!='doughnut')cfg.options.scales={y:{ticks:{callback:()=>'•••'}}}}charts[id]=new Chart($('#'+id),cfg)}

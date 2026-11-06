@@ -16,4 +16,4 @@ function edit(id){editId=id||null;const r=D.find(x=>x.ID==id)||{Date:new Date().
  const f=$('#frm');F9.forEach(c=>f[c].value=r[c]??'');$('#dlT').textContent=id?'แก้ไข Transaction':'เพิ่ม Transaction';$('#bDel').style.display=$('#bDup').style.display=id?'':'none';$('#dlg').showModal()}
 $('#dlg').onclose=async()=>{const v=$('#dlg').returnValue,f=$('#frm');if(v=='x'||!v)return;
  if(v=='del'){if(confirm('ลบรายการนี้?')){await DB.del('trx',editId);await reload()}return}
- const o={};F9.forEach(c=>o[c]=f[c].value.trim());o.ID=(v=='save'&&editId)?editId:'';await saveNamed([o]);await reload()};
+ const o={};F9.forEach(c=>o[c]=f[c].value.trim());o.ID=(v=='save'&&editId)?editId:'';o.edited=true;await saveNamed([o]);await reload()};

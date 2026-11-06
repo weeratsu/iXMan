@@ -8,6 +8,9 @@ function refresh(){$('#cnt').textContent=`${T.length.toLocaleString()} ราย
  const F=['Category','Subcategory','Vendor','Type','Payment','Year','Month'];if(!$('#pR').options.length){opts($('#pR'),F,null);opts($('#pCol'),F,null);$('#pR').value='Category';$('#pCol').value='Year'}
  dash();filt();rep();master();qa()}
 async function reload(){await loadAll();refresh()}
-function go(s){$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.s==s));$$('.sec').forEach(x=>x.classList.toggle('on',x.id==s))}
-$$('nav button').forEach(b=>b.onclick=()=>go(b.dataset.s));
+function go(s){$$('nav button[data-s]').forEach(b=>b.classList.toggle('on',b.dataset.s==s));$$('.sec').forEach(x=>x.classList.toggle('on',x.id==s))}
+$$('nav button[data-s]').forEach(b=>b.onclick=()=>go(b.dataset.s));
 reload().then(()=>{if(!T.length)go('data')}).catch(console.error);
+function toggleHide(){HIDE=!HIDE;try{localStorage.setItem('ixman_hide',HIDE?'1':'0')}catch(e){};setHideBtn();refresh()}
+function setHideBtn(){$('#hideBtn').textContent=HIDE?'👁 แสดงตัวเลข':'🙈 ซ่อนตัวเลข'}
+setHideBtn();

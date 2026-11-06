@@ -3,9 +3,13 @@ $('#fi').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('#iMsg').te
  const rows=parseCSV((await f.text()).replace(/^\uFEFF/,''));const h=rows.shift().map(x=>x.trim()),ix=Object.fromEntries(COLS.map(c=>[c,h.indexOf(c)]));
  if(ix.Date<0||ix.Amount<0){$('#iMsg').textContent='❌ header ไม่ถูกต้อง';return}
  const recs=rows.filter(r=>r.length>1).map(r=>{const o={};COLS.forEach(c=>o[c]=ix[c]>=0?(r[ix[c]]??'').trim():'');o.Date=toISO(o.Date);return o});
- if($('#rep1').checked){await DB.clear('trx');await DB.clear('master');await loadAll()}
- const old=new Set(T.map(x=>x.ID)),nw=recs.filter(r=>!old.has(r.ID)).length;
- await saveNamed(recs);await reload();$('#iMsg').textContent=`✅ อ่าน ${recs.length} รายการ: ใหม่ ${nw}, อัปเดต ${recs.length-nw}`;e.target.value=''};
+ const mode=$('#iMode').value;
+ if(mode=='replace'){if(!confirm('ล้างข้อมูลเดิมทั้งหมดก่อน import?')){e.target.value='';return}await DB.clear('trx');await DB.clear('master');await loadAll()}
+ const ex=new Map(T.map(x=>[x.ID,x]));let nw=0,up=0,sk=0;
+ const go_=recs.filter(r=>{const o=ex.get(r.ID);if(!o){nw++;return true}
+  if(mode=='skip'||(mode=='unedited'&&o.edited)){sk++;return false}up++;return true});
+ if(!confirm(`ใหม่ ${nw} · ทับ ${up} · ข้าม ${sk}\nดำเนินการต่อ?`)){e.target.value='';$('#iMsg').textContent='ยกเลิก';return}
+ await saveNamed(go_);await reload();$('#iMsg').textContent=`✅ ใหม่ ${nw}, ทับ ${up}, ข้าม ${sk}`;e.target.value=''};
 function expCSV(rows){dl(`ix_export_${new Date().toISOString().slice(0,10)}.csv`,'\uFEFF'+[COLS.map(csvQ).join(',')].concat([...rows].sort((a,b)=>a.Date<b.Date?-1:1).map(r=>COLS.map(c=>csvQ(c=='Date'?fromISO(r.Date):c=='Amount'?r.Amount.toFixed(2):r[c])).join(','))).join('\n'),'text/csv')}
 const expJSON=()=>dl(`ixman_backup_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify({version:2,master:[...M.values()],trx:T}),'application/json');
 $('#fj').onchange=async e=>{const a=JSON.parse(await e.target.files[0].text());if(!a.master){alert('ไฟล์ backup ไม่ใช่รูปแบบ iXMan v2');return}
