@@ -1,0 +1,2 @@
+const thm=$('#thm');thm.value=document.documentElement.dataset.theme;
+thm.onchange=e=>{document.documentElement.dataset.theme=e.target.value;try{localStorage.setItem('ixman_theme',e.target.value)}catch(_){};if(D.length){dash();rep()}};
