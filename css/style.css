@@ -36,7 +36,7 @@ input[type=date]{color-scheme:light}[data-theme=dark] input[type=date],[data-the
 .btn:hover{filter:brightness(1.08)}.btn:active{transform:translateY(1px)}
 .btn.g{background:var(--hv);color:var(--tx);border:1px solid var(--ln)}
 .fbtn{cursor:pointer}
-#iMode{min-width:280px}
+#iMode{min-width:0;max-width:100%}
 
 /* chart pill filters */
 .chd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px}.chd h3{margin:0}
@@ -44,3 +44,32 @@ input[type=date]{color-scheme:light}[data-theme=dark] input[type=date],[data-the
 .pill{border:0;background:none;color:var(--mu);padding:4px 11px;border-radius:999px;cursor:pointer;font:inherit;font-size:12px;white-space:nowrap;transition:background .15s,color .15s}
 .pill:hover{color:var(--tx)}.pill.on{background:var(--ac);color:var(--bt);font-weight:600}
 .pill .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+/* ===== responsive (all pages) ===== */
+main{min-width:0}.card,.kpi,.grid2>*{min-width:0}.card{overflow-x:auto}
+canvas{max-width:100%}.tw{-webkit-overflow-scrolling:touch}
+dialog{width:min(440px,94vw);max-height:90vh;overflow:auto}
+@media(max-width:1100px){.grid2{grid-template-columns:1fr}}
+@media(max-width:768px){
+ body{display:block;height:auto;min-height:100vh}
+ nav{position:sticky;top:0;z-index:20;width:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;border-right:0;border-bottom:1px solid var(--ln)}
+ nav h1{margin:0;font-size:16px;flex:1}
+ nav label.mu{display:flex!important;align-items:center;gap:4px;margin:0!important;font-size:0!important}
+ nav label.mu select{width:auto!important;margin:0!important;font-size:12px;padding:5px 26px 5px 8px}
+ #hideBtn{width:auto!important;margin:0!important;padding:6px 10px;font-size:12px}
+ nav p#cnt{display:none}
+ nav button[data-s]{order:10;width:auto;display:inline-block;margin:0;padding:7px 10px;font-size:12px;white-space:nowrap;background:var(--bg)}
+ nav{overflow-x:auto}
+ nav button[data-s].on{background:var(--ac);color:var(--bt)}
+ main{padding:10px;overflow:visible}
+ .row{gap:6px}.row>select,.row>input:not([type=checkbox]){flex:1 1 140px;min-width:0}
+ #q{flex-basis:100%!important}
+ .kpis{grid-template-columns:repeat(2,1fr);gap:8px}.kpi b{font-size:16px}
+ .kpi:last-child:nth-child(odd){grid-column:1/-1}
+ .chd{flex-direction:column;align-items:flex-start}.pills{width:100%}
+ .pg{max-width:100%;overflow-x:auto}
+ .tw{max-height:none}
+ th,td{padding:5px 6px;font-size:12px}
+ .card h3{font-size:14px}
+}
+@media(max-width:400px){.kpis{grid-template-columns:1fr}}
