@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>iXMan</title>
+<link rel="icon" href="images/favicon.ico?v=1" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png?v=1"><link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png?v=1"><link rel="manifest" href="manifest.webmanifest?v=1"><meta name="theme-color" content="#0ea5e9">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root,[data-theme=light]{--bg:#f1f5f9;--pn:#fff;--ln:#e2e8f0;--tx:#0f172a;--mu:#64748b;--ac:#0284c7;--in:#16a34a;--ex:#dc2626;--hv:#e0f2fe;--bt:#fff}
+[data-theme=dark]{--bg:#0f172a;--pn:#1e293b;--ln:#334155;--tx:#e2e8f0;--mu:#94a3b8;--ac:#38bdf8;--in:#4ade80;--ex:#f87171;--hv:#273449;--bt:#000}
+[data-theme=mint]{--bg:#f0fdf4;--pn:#fff;--ln:#d1fae5;--tx:#064e3b;--mu:#6b7280;--ac:#059669;--in:#16a34a;--ex:#e11d48;--hv:#d1fae5;--bt:#fff}
+[data-theme=sakura]{--bg:#fdf2f8;--pn:#fff;--ln:#fce7f3;--tx:#500724;--mu:#9d6b84;--ac:#db2777;--in:#059669;--ex:#dc2626;--hv:#fce7f3;--bt:#fff}
+[data-theme=midnight]{--bg:#000;--pn:#111;--ln:#2a2a2a;--tx:#eee;--mu:#888;--ac:#a78bfa;--in:#4ade80;--ex:#fb7185;--hv:#1f1f2e;--bt:#000}
+*{box-sizing:border-box}body{margin:0;font:14px system-ui,'Segoe UI',Tahoma;background:var(--bg);color:var(--tx);display:flex;height:100vh}
+nav{width:190px;background:var(--pn);border-right:1px solid var(--ln);padding:12px;flex-shrink:0}
+nav h1{font-size:17px;color:var(--ac);margin:4px 0 16px}nav button{display:block;width:100%;text-align:left;margin:3px 0;padding:9px;border:0;border-radius:6px;background:none;color:var(--tx);cursor:pointer}
+nav button.on,nav button:hover{background:var(--ln)}main{flex:1;overflow:auto;padding:18px}
+.sec{display:none}.sec.on{display:block}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+input,select,textarea{background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:6px;padding:6px 8px;font:inherit}
+.btn{background:var(--ac);color:var(--bt);border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:600}.btn.g{background:var(--ln);color:var(--tx)}.btn.r{background:var(--ex)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:12px}.kpi b{display:block;font-size:20px;margin-top:4px}.kpi span{color:var(--mu);font-size:12px}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:12px;margin-bottom:14px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+table{width:100%;border-collapse:collapse}th,td{padding:6px 8px;border-bottom:1px solid var(--ln);text-align:left;white-space:nowrap}th{color:var(--mu);font-weight:600;position:sticky;top:0;background:var(--pn);cursor:pointer}
+td.n,th.n{text-align:right}.in{color:var(--in)}.ex{color:var(--ex)}tr.cl:hover{background:var(--hv);cursor:pointer}.mu{color:var(--mu)}
+.tw{max-height:62vh;overflow:auto}dialog{background:var(--pn);color:var(--tx);border:1px solid var(--ln);border-radius:10px;width:440px}
+dialog label{display:block;margin:6px 0 2px;color:var(--mu);font-size:12px}dialog input,dialog select,dialog textarea{width:100%}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}nav{width:140px}}
+</style></head><body>
+<nav><h1><img src="images/icon-192.png" style="width:26px;vertical-align:middle;border-radius:6px"> iXMan</h1>
+<button data-s="dash" class="on">📊 Dashboard</button><button data-s="trx">🔎 Transactions</button>
+<button data-s="rep">📈 Reports</button><button data-s="pivot">🧮 Pivot</button><button data-s="master">🗂 Master data</button><button data-s="data">💾 Import / Export</button>
+<label class="mu" style="font-size:12px;display:block;margin-top:16px">🎨 ธีม<select id="thm" style="width:100%;margin-top:4px"><option value="light">Light</option><option value="dark">Dark</option><option value="mint">Mint</option><option value="sakura">Sakura</option><option value="midnight">Midnight</option></select></label>
+<p class="mu" id="cnt" style="font-size:12px;margin-top:20px"></p></nav>
+<main>
+<!-- DASHBOARD -->
+<section id="dash" class="sec on"><div class="row">ปี <select id="dY"></select> สกุลเงิน <select id="dC" class="curSel"></select> บัญชี <select id="dT" class="typSel"></select>
+<label><input type="checkbox" id="dXT" checked> ไม่รวม Transfer/Lending</label></div>
+<div class="kpis" id="dK"></div>
+<div class="card"><canvas id="cMon" height="80"></canvas></div>
+<div class="grid2"><div class="card"><h3>Top Category (รายจ่าย)</h3><canvas id="cCat"></canvas></div><div class="card"><h3>Top Vendor (รายจ่าย)</h3><div id="dV"></div></div></div>
+<div class="card"><h3>แนวโน้มรายปี</h3><canvas id="cYr" height="70"></canvas></div></section>
+<!-- TRX -->
+<section id="trx" class="sec"><div class="row">
+<input id="q" placeholder="ค้นหา vendor / note / sub / category..." style="flex:1;min-width:220px">
+<input type="date" id="f1"><input type="date" id="f2">
+<select id="fT" class="typSel"></select><select id="fCat"></select><select id="fP"></select><select id="fC" class="curSel"></select>
+<select id="fS"><option value="">ทั้งหมด</option><option value="ex">รายจ่าย</option><option value="in">รายรับ</option></select>
+<input id="fMin" type="number" placeholder="min |amt|" style="width:95px"><input id="fMax" type="number" placeholder="max |amt|" style="width:95px">
+<button class="btn g" onclick="clrF()">ล้าง</button><button class="btn" onclick="edit()">+ เพิ่ม</button><button class="btn g" onclick="expCSV(view)">Export ผลลัพธ์</button></div>
+<div class="row mu" id="tSum"></div>
+<div class="card tw"><table><thead><tr><th data-k="Date">วันที่</th><th data-k="Type">บัญชี</th><th data-k="Category">Category</th><th data-k="Subcategory">Sub</th><th data-k="Vendor">Vendor</th><th data-k="Payment">Payment</th><th class="n" data-k="Amount">Amount</th><th data-k="Note">Note</th></tr></thead><tbody id="tB"></tbody></table></div>
+<div class="row"><button class="btn g" onclick="pg(-1)">◀</button><span id="pgI"></span><button class="btn g" onclick="pg(1)">▶</button></div></section>
+<!-- REPORTS -->
+<section id="rep" class="sec"><div class="row">รายงาน <select id="rK">
+<option value="mon">รายเดือน (รับ/จ่าย/สุทธิ)</option><option value="yr">รายปี</option><option value="cat">ตาม Category → Sub</option>
+<option value="ven">ตาม Vendor</option><option value="typ">ตามบัญชี (Type) – ยอดคงเหลือ</option><option value="pay">ตาม Payment</option><option value="cur">ตามสกุลเงิน</option></select>
+ปี <select id="rY"></select> สกุลเงิน <select id="rC" class="curSel"></select> บัญชี <select id="rT" class="typSel"></select>
+<button class="btn g" onclick="expRep()">Export CSV</button></div>
+<div class="card"><canvas id="cRep" height="70"></canvas></div><div class="card tw" id="rOut"></div></section>
+<!-- PIVOT -->
+<section id="pivot" class="sec"><div class="row">แถว <select id="pR"></select> คอลัมน์ <select id="pCol"></select> สกุลเงิน <select id="pC" class="curSel"></select>
+<select id="pS"><option value="ex">รายจ่าย</option><option value="in">รายรับ</option><option value="">สุทธิ</option></select><button class="btn" onclick="pivot()">สร้าง</button></div>
+<div class="card tw" id="pOut"></div></section>
+<!-- MASTER -->
+<section id="master" class="sec"><div class="row">ฟิลด์ <select id="mF"><option>Category</option><option>Subcategory</option><option>Vendor</option><option>Type</option><option>Payment</option></select>
+<input id="mQ" placeholder="ค้นหา..."><span class="mu">คลิกชื่อเพื่อเปลี่ยนชื่อ/รวม (merge) ทุก trx</span></div><div class="card tw" id="mOut"></div></section>
+<!-- DATA -->
+<section id="data" class="sec"><div class="card"><h3>Import CSV จาก iXpensIt</h3>
+<p class="mu">รวมข้อมูลตาม ID: ID ซ้ำ = อัปเดต, ID ใหม่ = เพิ่ม (ไม่ลบรายการเดิม)</p>
+<input type="file" id="fi" accept=".csv"> <label><input type="checkbox" id="rep1"> ล้างข้อมูลเดิมก่อน import</label>
+<p id="iMsg"></p></div>
+<div class="card"><h3>Export</h3><button class="btn" onclick="expCSV(D)">Export CSV ทั้งหมด (format iXpensIt)</button>
+<button class="btn g" onclick="expJSON()">Backup JSON</button> <label class="btn g">Restore JSON<input type="file" id="fj" accept=".json" hidden></label>
+<button class="btn r" onclick="wipe()">ลบข้อมูลทั้งหมด</button></div>
+<div class="card"><h3>คุณภาพข้อมูล</h3><div id="qa"></div></div></section>
+</main>
+<dialog id="dlg"><form method="dialog" id="frm"><h3 id="dlT">Transaction</h3>
+<label>วันที่</label><input type="date" name="Date" required>
+<label>บัญชี (Type)</label><input name="Type" list="lT" required><label>Category</label><input name="Category" list="lCat">
+<label>Subcategory</label><input name="Subcategory" list="lSub"><label>Vendor</label><input name="Vendor" list="lV">
+<label>Payment</label><input name="Payment" list="lP"><label>Currency</label><input name="Currency" value="THB" list="lC">
+<label>Amount (ติดลบ = รายจ่าย)</label><input name="Amount" type="number" step="0.01" required><label>Note</label><textarea name="Note" rows="2"></textarea>
+<div class="row" style="margin-top:12px"><button class="btn" value="save">บันทึก</button><button class="btn g" value="dup" id="bDup">ทำซ้ำ</button><button class="btn r" value="del" id="bDel">ลบ</button><button class="btn g" value="x" formnovalidate>ยกเลิก</button></div></form></dialog>
+<datalist id="lT"></datalist><datalist id="lCat"></datalist><datalist id="lSub"></datalist><datalist id="lV"></datalist><datalist id="lP"></datalist><datalist id="lC"></datalist>
+<script>
+let D=[],view=[],page=0,sortK='Date',sortD=-1,editId=null;const PS=200,charts={};
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const fmt=n=>n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const XCAT=/transfer|lending|loan|ยืม/i;
+// ---- IndexedDB ----
+const idb=new Promise(ok=>{try{const r=indexedDB.open('ixpensit',1);r.onupgradeneeded=()=>r.result.createObjectStore('trx',{keyPath:'ID'});r.onsuccess=()=>ok(r.result);r.onerror=r.onblocked=()=>ok(null)}catch(e){ok(null)}});
+const MEM=new Map(),memS={getAll(){return{result:[...MEM.values()]}},put(r){MEM.set(r.ID,r)},delete(id){MEM.delete(id)},clear(){MEM.clear()}};
+async function tx(mode,fn){const db=await idb;if(!db){const r=fn(memS);return r&&r.result}
+ return new Promise(ok=>{try{const t=db.transaction('trx',mode),s=t.objectStore('trx');const r=fn(s);t.oncomplete=()=>ok(r&&r.result);t.onerror=()=>ok(null)}catch(e){const r=fn(memS);ok(r&&r.result)}})}
+const load=async()=>{try{D=await tx('readonly',s=>s.getAll())||[];refresh()}catch(e){console.error(e)}};
+const putMany=rows=>tx('readwrite',s=>rows.forEach(r=>s.put(r)));
+const delOne=id=>tx('readwrite',s=>s.delete(id));
+// ---- CSV ----
+function parseCSV(t){const out=[];let row=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];
+ if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
+ else if(c=='"')q=true;else if(c==','){row.push(f);f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);out.push(row);row=[];f=''}else f+=c}
+ if(f||row.length){row.push(f);out.push(row)}return out}
+const toISO=d=>{const m=d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:d};
+const fromISO=d=>{const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`};
+const COLS=["Date","Type","Category","Subcategory","Vendor","Payment","Currency","Amount","Note","ID"];
+$('#fi').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('#iMsg').textContent='กำลังอ่าน...';
+ const rows=parseCSV((await f.text()).replace(/^\uFEFF/,''));const h=rows.shift().map(x=>x.trim());const ix=Object.fromEntries(COLS.map(c=>[c,h.indexOf(c)]));
+ if(ix.Date<0||ix.Amount<0){$('#iMsg').textContent='❌ header ไม่ถูกต้อง';return}
+ const recs=rows.filter(r=>r.length>1).map(r=>{const o={};COLS.forEach(c=>o[c]=ix[c]>=0?(r[ix[c]]??'').trim():'');o.Date=toISO(o.Date);o.Amount=parseFloat(o.Amount)||0;if(!o.ID)o.ID=crypto.randomUUID().toUpperCase();return o});
+ if($('#rep1').checked)await tx('readwrite',s=>s.clear());
+ const old=new Set(D.map(x=>x.ID));const nw=recs.filter(r=>!old.has(r.ID)).length;
+ await putMany(recs);await load();$('#iMsg').textContent=`✅ อ่าน ${recs.length} รายการ: ใหม่ ${nw}, อัปเดต ${recs.length-nw}`;e.target.value=''};
+const csvQ=v=>`"${String(v).replace(/"/g,'""')}"`;
+function dl(name,txt,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;a.click()}
+function expCSV(rows){dl(`ix_export_${new Date().toISOString().slice(0,10)}.csv`,'\uFEFF'+[COLS.map(csvQ).join(',')].concat([...rows].sort((a,b)=>a.Date<b.Date?-1:1).map(r=>COLS.map(c=>csvQ(c=='Date'?fromISO(r.Date):c=='Amount'?r.Amount.toFixed(2):r[c])).join(','))).join('\n'),'text/csv')}
+const expJSON=()=>dl('ixpensit_backup.json',JSON.stringify(D),'application/json');
+$('#fj').onchange=async e=>{const a=JSON.parse(await e.target.files[0].text());if(!confirm(`Restore ${a.length} รายการ (แทนที่ทั้งหมด)?`))return;await tx('readwrite',s=>s.clear());await putMany(a);load()};
+async function wipe(){if(confirm('ลบข้อมูลทั้งหมด?')){await tx('readwrite',s=>s.clear());load()}}
+// ---- helpers ----
+const uniq=k=>[...new Set(D.map(r=>r[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+const years=()=>[...new Set(D.map(r=>r.Date.slice(0,4)))].sort().reverse();
+function opts(sel,arr,all='ทั้งหมด',keep=true){const v=sel.value;sel.innerHTML=(all!==null?`<option value="">${all}</option>`:'')+arr.map(x=>`<option>${esc(x)}</option>`).join('');if(keep&&[...sel.options].some(o=>o.value==v))sel.value=v}
+function group(rows,kf){const m=new Map();rows.forEach(r=>{const k=kf(r);let g=m.get(k);if(!g)m.set(k,g={k,inc:0,exp:0,n:0});r.Amount>=0?g.inc+=r.Amount:g.exp-=r.Amount;g.n++});return[...m.values()]}
+function chart(id,cfg){if(!window.Chart)return;charts[id]?.destroy();const cs=getComputedStyle(document.documentElement);Chart.defaults.color=cs.getPropertyValue('--mu').trim();Chart.defaults.borderColor=cs.getPropertyValue('--ln').trim();charts[id]=new Chart($('#'+id),cfg)}
+function refresh(){$('#cnt').textContent=`${D.length.toLocaleString()} รายการ`;
+ const cur=uniq('Currency');$$('.curSel').forEach(s=>{opts(s,cur,'ทุกสกุล');if(!s.dataset.i){s.value=cur.includes('THB')?'THB':'';s.dataset.i=1}});
+ $$('.typSel').forEach(s=>opts(s,uniq('Type'),'ทุกบัญชี'));opts($('#fCat'),uniq('Category'),'ทุก Category');opts($('#fP'),uniq('Payment'),'ทุก Payment');
+ opts($('#dY'),years(),'ทุกปี');opts($('#rY'),years(),'ทุกปี');
+ [['lT','Type'],['lCat','Category'],['lSub','Subcategory'],['lV','Vendor'],['lP','Payment'],['lC','Currency']].forEach(([l,k])=>$('#'+l).innerHTML=uniq(k).map(x=>`<option value="${esc(x)}">`).join(''));
+ const F=['Category','Subcategory','Vendor','Type','Payment','Year','Month'];opts($('#pR'),F,null);opts($('#pCol'),F,null);if(!$('#pCol').dataset.i){$('#pR').value='Category';$('#pCol').value='Year';$('#pCol').dataset.i=1}
+ renderAll()}
+function renderAll(){dash();filt();rep();master();qa()}
+// ---- Dashboard ----
+function dash(){if(!D.length)return;const y=$('#dY').value,c=$('#dC').value,t=$('#dT').value,x=$('#dXT').checked;
+ const R=D.filter(r=>(!y||r.Date.startsWith(y))&&(!c||r.Currency==c)&&(!t||r.Type==t)&&(!x||!XCAT.test(r.Category)));
+ const inc=R.reduce((s,r)=>s+(r.Amount>0?r.Amount:0),0),exp=R.reduce((s,r)=>s+(r.Amount<0?-r.Amount:0),0);
+ const months=new Set(R.map(r=>r.Date.slice(0,7))).size||1;
+ $('#dK').innerHTML=[['รายรับ',fmt(inc),'in'],['รายจ่าย',fmt(exp),'ex'],['สุทธิ',fmt(inc-exp),inc>=exp?'in':'ex'],['จ่ายเฉลี่ย/เดือน',fmt(exp/months),''],['จำนวน trx',R.length.toLocaleString(),'']].map(([a,b,k])=>`<div class="kpi"><span>${a}</span><b class="${k}">${b}</b></div>`).join('');
+ const M=group(R,r=>y?r.Date.slice(0,7):r.Date.slice(0,7)).sort((a,b)=>a.k<b.k?-1:1);const Ms=y?M:M.slice(-36);
+ chart('cMon',{type:'bar',data:{labels:Ms.map(g=>g.k),datasets:[{label:'รายรับ',data:Ms.map(g=>g.inc),backgroundColor:'#4ade80'},{label:'รายจ่าย',data:Ms.map(g=>g.exp),backgroundColor:'#f87171'},{type:'line',label:'สุทธิ',data:Ms.map(g=>g.inc-g.exp),borderColor:'#38bdf8'}]}});
+ const C=group(R.filter(r=>r.Amount<0),r=>r.Category).sort((a,b)=>b.exp-a.exp).slice(0,10);
+ chart('cCat',{type:'doughnut',data:{labels:C.map(g=>g.k),datasets:[{data:C.map(g=>g.exp)}]},options:{plugins:{legend:{position:'right'}}}});
+ const V=group(R.filter(r=>r.Amount<0&&r.Vendor&&r.Vendor!='NONE'),r=>r.Vendor).sort((a,b)=>b.exp-a.exp).slice(0,12);
+ $('#dV').innerHTML=tbl(['Vendor','ครั้ง','รายจ่าย'],V.map(g=>[esc(g.k),g.n,fmt(g.exp)]),[1,2]);
+ const Y=group(D.filter(r=>(!c||r.Currency==c)&&(!t||r.Type==t)&&(!x||!XCAT.test(r.Category))),r=>r.Date.slice(0,4)).sort((a,b)=>a.k<b.k?-1:1);
+ chart('cYr',{type:'bar',data:{labels:Y.map(g=>g.k),datasets:[{label:'รายรับ',data:Y.map(g=>g.inc),backgroundColor:'#4ade80'},{label:'รายจ่าย',data:Y.map(g=>g.exp),backgroundColor:'#f87171'}]}})}
+['dY','dC','dT','dXT'].forEach(i=>$('#'+i).onchange=dash);
+function tbl(h,rows,num=[],cls=''){return`<table><thead><tr>${h.map((x,i)=>`<th class="${num.includes(i)?'n':''}">${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr class="${cls}">${r.map((v,i)=>`<td class="${num.includes(i)?'n':''}">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
+// ---- Transactions ----
+function filt(){const q=$('#q').value.toLowerCase().trim(),a=$('#f1').value,b=$('#f2').value,t=$('#fT').value,ca=$('#fCat').value,p=$('#fP').value,c=$('#fC').value,s=$('#fS').value,mn=parseFloat($('#fMin').value),mx=parseFloat($('#fMax').value);
+ const terms=q?q.split(/\s+/):[];
+ view=D.filter(r=>(!a||r.Date>=a)&&(!b||r.Date<=b)&&(!t||r.Type==t)&&(!ca||r.Category==ca)&&(!p||r.Payment==p)&&(!c||r.Currency==c)&&(!s||(s=='ex'?r.Amount<0:r.Amount>=0))
+  &&(isNaN(mn)||Math.abs(r.Amount)>=mn)&&(isNaN(mx)||Math.abs(r.Amount)<=mx)
+  &&(!terms.length||terms.every(w=>(r.Vendor+' '+r.Note+' '+r.Subcategory+' '+r.Category+' '+r.Type+' '+r.Amount).toLowerCase().includes(w))));
+ view.sort((x,y)=>(x[sortK]>y[sortK]?1:x[sortK]<y[sortK]?-1:0)*sortD);page=0;
+ const inc=view.reduce((s,r)=>s+(r.Amount>0?r.Amount:0),0),exp=view.reduce((s,r)=>s+(r.Amount<0?-r.Amount:0),0);
+ $('#tSum').innerHTML=`พบ <b>${view.length.toLocaleString()}</b> รายการ · รับ <span class="in">${fmt(inc)}</span> · จ่าย <span class="ex">${fmt(exp)}</span> · สุทธิ <b>${fmt(inc-exp)}</b> ${c?'':'<span class="mu">(รวมหลายสกุล)</span>'}`;drawT()}
+function drawT(){const P=view.slice(page*PS,page*PS+PS);
+ $('#tB').innerHTML=P.map(r=>`<tr class="cl" data-id="${r.ID}"><td>${fromISO(r.Date)}</td><td>${esc(r.Type)}</td><td>${esc(r.Category)}</td><td>${esc(r.Subcategory)}</td><td>${esc(r.Vendor)}</td><td>${esc(r.Payment)}</td><td class="n ${r.Amount<0?'ex':'in'}">${fmt(r.Amount)} <span class="mu">${r.Currency}</span></td><td class="mu">${esc(r.Note)}</td></tr>`).join('');
+ $('#pgI').textContent=`หน้า ${page+1}/${Math.max(1,Math.ceil(view.length/PS))}`}
+const pg=d=>{const m=Math.ceil(view.length/PS)-1;page=Math.min(Math.max(0,page+d),Math.max(0,m));drawT()};
+let tm;$('#q').oninput=()=>{clearTimeout(tm);tm=setTimeout(filt,200)};['f1','f2','fT','fCat','fP','fC','fS','fMin','fMax'].forEach(i=>$('#'+i).onchange=filt);
+function clrF(){['q','f1','f2','fT','fCat','fP','fS','fMin','fMax'].forEach(i=>$('#'+i).value='');filt()}
+$$('#trx th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;sortD=sortK==k?-sortD:-1;sortK=k;filt()});
+$('#tB').onclick=e=>{const tr=e.target.closest('tr');if(tr)edit(tr.dataset.id)};
+function edit(id){editId=id||null;const r=D.find(x=>x.ID==id)||{Date:new Date().toISOString().slice(0,10),Currency:'THB',Type:'Personal',Payment:'Cash'};
+ const f=$('#frm');COLS.slice(0,9).forEach(c=>f[c].value=r[c]??'');$('#dlT').textContent=id?'แก้ไข Transaction':'เพิ่ม Transaction';$('#bDel').style.display=$('#bDup').style.display=id?'':'none';$('#dlg').showModal()}
+$('#dlg').onclose=async()=>{const v=$('#dlg').returnValue,f=$('#frm');if(v=='x'||!v)return;
+ if(v=='del'){if(confirm('ลบรายการนี้?')){await delOne(editId);await load()}return}
+ const o={};COLS.slice(0,9).forEach(c=>o[c]=f[c].value.trim());o.Amount=parseFloat(o.Amount)||0;o.ID=(v=='save'&&editId)?editId:crypto.randomUUID().toUpperCase();
+ await putMany([o]);await load()};
+// ---- Reports ----
+let lastRep=[];
+function rep(){if(!D.length)return;const k=$('#rK').value,y=$('#rY').value,c=$('#rC').value,t=$('#rT').value;
+ const R=D.filter(r=>(!y||k=='yr'||r.Date.startsWith(y))&&(!c||r.Currency==c)&&(!t||r.Type==t));
+ const kf={mon:r=>r.Date.slice(0,7),yr:r=>r.Date.slice(0,4),cat:r=>r.Category,ven:r=>r.Vendor||'(none)',typ:r=>r.Type,pay:r=>r.Payment,cur:r=>r.Currency}[k];
+ let G=group(R,kf);if(k=='mon'||k=='yr')G.sort((a,b)=>a.k<b.k?-1:1);else if(k=='typ')G.sort((a,b)=>(b.inc-b.exp)-(a.inc-a.exp));else G.sort((a,b)=>b.exp-a.exp);
+ if(k=='ven')G=G.slice(0,300);lastRep=G;const tI=G.reduce((s,g)=>s+g.inc,0),tE=G.reduce((s,g)=>s+g.exp,0);
+ let rows=G.map(g=>[`<b>${esc(g.k)}</b>`,g.n,`<span class="in">${fmt(g.inc)}</span>`,`<span class="ex">${fmt(g.exp)}</span>`,fmt(g.inc-g.exp),tE?(g.exp/tE*100).toFixed(1)+'%':'']);
+ let html=tbl([{mon:'เดือน',yr:'ปี',cat:'Category',ven:'Vendor',typ:'บัญชี',pay:'Payment',cur:'สกุลเงิน'}[k],'ครั้ง','รับ','จ่าย',k=='typ'?'ยอดคงเหลือ':'สุทธิ','% จ่าย'],rows.concat([['<b>รวม</b>',R.length,fmt(tI),fmt(tE),fmt(tI-tE),'']]),[1,2,3,4,5]);
+ if(k=='cat'){html+='<h3>Subcategory</h3>'+tbl(['Category','Sub','ครั้ง','จ่าย','รับ'],group(R,r=>r.Category+'\u0001'+r.Subcategory).sort((a,b)=>b.exp-a.exp).map(g=>{const[a,b]=g.k.split('\u0001');return[esc(a),esc(b),g.n,fmt(g.exp),fmt(g.inc)]}),[2,3,4])}
+ $('#rOut').innerHTML=html;const C=G.slice(0,k=='mon'||k=='yr'?999:20);
+ chart('cRep',{type:'bar',data:{labels:C.map(g=>g.k),datasets:[{label:'รับ',data:C.map(g=>g.inc),backgroundColor:'#4ade80'},{label:'จ่าย',data:C.map(g=>g.exp),backgroundColor:'#f87171'}]}})}
+['rK','rY','rC','rT'].forEach(i=>$('#'+i).onchange=rep);
+function expRep(){dl('report.csv','\uFEFFKey,Count,Income,Expense,Net\n'+lastRep.map(g=>[csvQ(g.k),g.n,g.inc.toFixed(2),g.exp.toFixed(2),(g.inc-g.exp).toFixed(2)].join(',')).join('\n'),'text/csv')}
+// ---- Pivot ----
+function pivot(){const rk=$('#pR').value,ck=$('#pCol').value,c=$('#pC').value,s=$('#pS').value;
+ const val=(r,k)=>k=='Year'?r.Date.slice(0,4):k=='Month'?r.Date.slice(5,7):r[k]||'(none)';
+ const R=D.filter(r=>(!c||r.Currency==c)&&(!s||(s=='ex'?r.Amount<0:r.Amount>=0)));const M={},cs=new Set(),tot={};
+ R.forEach(r=>{const a=val(r,rk),b=val(r,ck),v=s=='ex'?-r.Amount:r.Amount;cs.add(b);(M[a]??={})[b]=(M[a][b]||0)+v;tot[a]=(tot[a]||0)+v});
+ const C=[...cs].sort(),rows=Object.keys(M).sort((a,b)=>tot[b]-tot[a]);
+ $('#pOut').innerHTML=tbl([rk+' \\ '+ck,...C,'รวม'],rows.map(a=>[esc(a),...C.map(b=>M[a][b]?fmt(M[a][b]):''),`<b>${fmt(tot[a])}</b>`]),C.map((_,i)=>i+1).concat(C.length+1))}
+// ---- Master data ----
+function master(){const f=$('#mF').value,q=$('#mQ').value.toLowerCase();const G=group(D,r=>r[f]||'').filter(g=>g.k.toLowerCase().includes(q)).sort((a,b)=>b.n-a.n);
+ $('#mOut').innerHTML=tbl([f,'ครั้ง','รับ','จ่าย','ล่าสุด'],G.map(g=>[`<a href="#" data-v="${esc(g.k)}" style="color:var(--ac)">${esc(g.k)||'(ว่าง)'}</a>`,g.n,fmt(g.inc),fmt(g.exp),D.filter(r=>r[f]==g.k).reduce((m,r)=>r.Date>m?r.Date:m,'')]),[1,2,3])}
+$('#mF').onchange=master;$('#mQ').oninput=master;
+$('#mOut').onclick=async e=>{const a=e.target.closest('a');if(!a)return;e.preventDefault();const f=$('#mF').value,o=a.dataset.v;
+ const n=prompt(`เปลี่ยนชื่อ ${f} "${o}" เป็น (ใส่ชื่อที่มีอยู่แล้ว = merge):`,o);if(n===null||n===o)return;
+ const rows=D.filter(r=>r[f]==o).map(r=>({...r,[f]:n.trim()}));if(confirm(`อัปเดต ${rows.length} รายการ?`)){await putMany(rows);await load()}};
+// ---- Data quality ----
+function qa(){const zero=D.filter(r=>!r.Amount).length,noCat=D.filter(r=>!r.Category).length,fut=D.filter(r=>r.Date>new Date().toISOString().slice(0,10)).length;
+ const dk={};D.forEach(r=>{const k=r.Date+r.Amount+r.Vendor+r.Subcategory;dk[k]=(dk[k]||0)+1});const dup=Object.values(dk).filter(v=>v>1).length;
+ $('#qa').innerHTML=`ช่วงข้อมูล: ${D.length?fromISO(D.reduce((m,r)=>r.Date<m?r.Date:m,'9999'))+' – '+fromISO(D.reduce((m,r)=>r.Date>m?r.Date:m,'')):'-'}<br>
+ Amount = 0: ${zero} · ไม่มี Category: ${noCat} · วันที่ในอนาคต: <a href="#" onclick="go('trx');$('#f1').value=new Date().toISOString().slice(0,10);filt();return false" style="color:var(--ac)">${fut}</a> · กลุ่มที่อาจซ้ำ (วัน+ยอด+vendor+sub เดียวกัน): ${dup}`}
+// ---- nav ----
+function go(s){$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.s==s));$$('.sec').forEach(x=>x.classList.toggle('on',x.id==s))}
+$$('nav button').forEach(b=>b.onclick=()=>go(b.dataset.s));
+let TH='light';try{TH=localStorage.getItem('ixman_theme')||'light'}catch(e){}
+document.documentElement.dataset.theme=TH;$('#thm').value=TH;
+$('#thm').onchange=e=>{document.documentElement.dataset.theme=e.target.value;try{localStorage.setItem('ixman_theme',e.target.value)}catch(_){};if(D.length){dash();rep()}};
+load().then(()=>{if(!D.length)go('data')}).catch(console.error);
+</script></body></html>
