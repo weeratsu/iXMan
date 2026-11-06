@@ -20,3 +20,11 @@ function opts(sel,arr,all='ทั้งหมด'){const v=sel.value;sel.innerHT
 const charts={};
 function chart(id,cfg){if(!window.Chart)return;charts[id]?.destroy();const cs=getComputedStyle(document.documentElement);Chart.defaults.color=cs.getPropertyValue('--mu').trim();Chart.defaults.borderColor=cs.getPropertyValue('--ln').trim();if(HIDE){cfg.options=cfg.options||{};cfg.options.plugins={...(cfg.options.plugins||{}),tooltip:{enabled:false}};if(cfg.type!='doughnut')cfg.options.scales={y:{ticks:{callback:()=>'•••'}}}}if(innerWidth<=768&&cfg.type!='doughnut'){cfg.options=cfg.options||{};cfg.options.aspectRatio=1.4}if(innerWidth<=768&&cfg.type=='doughnut'&&cfg.options?.plugins?.legend){cfg.options.plugins.legend.position='bottom'}charts[id]=new Chart($('#'+id),cfg)}
 let _rz;addEventListener('resize',()=>{clearTimeout(_rz);_rz=setTimeout(()=>{if(typeof D!='undefined'&&D.length){dash();rep()}},300)});
+// generic click-to-sort for all tables except Transactions (own sort). 'รวม' row stays at bottom.
+function _sv(t){t=t.trim();let m=t.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);if(m)return m[3]+m[2]+m[1];
+ const n=t.replace(/[,%\s]|[A-Z]{3}$/g,'');return n!==''&&!isNaN(n)?+n:t.toLowerCase()}
+document.addEventListener('click',e=>{const th=e.target.closest('th');if(!th||th.closest('#trx'))return;const tb=th.closest('table')?.tBodies[0];if(!tb)return;
+ const i=[...th.parentNode.children].indexOf(th),asc=th.dataset.so!='a';th.parentNode.querySelectorAll('th').forEach(x=>delete x.dataset.so);th.dataset.so=asc?'a':'d';
+ const rows=[...tb.rows],tot=rows.filter(r=>/^\s*รวม\s*$/.test(r.cells[0]?.textContent||'')),body=rows.filter(r=>!tot.includes(r));
+ body.sort((a,b)=>{const x=_sv(a.cells[i]?.textContent||''),y=_sv(b.cells[i]?.textContent||'');return(typeof x==typeof y?(x>y?1:x<y?-1:0):typeof x=='number'?-1:1)*(asc?1:-1)});
+ body.concat(tot).forEach(r=>tb.appendChild(r))});

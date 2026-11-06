@@ -10,7 +10,8 @@ function drawT(){$('#tB').innerHTML=view.slice(page*PS,page*PS+PS).map(r=>`<tr c
 const pg=d=>{page=Math.min(Math.max(0,page+d),Math.max(0,Math.ceil(view.length/PS)-1));drawT()};
 let tm;$('#q').oninput=()=>{clearTimeout(tm);tm=setTimeout(filt,200)};['f1','f2','fT','fCat','fP','fC','fS','fMin','fMax'].forEach(i=>$('#'+i).onchange=filt);
 function clrF(){['q','f1','f2','fT','fCat','fP','fS','fMin','fMax'].forEach(i=>$('#'+i).value='');filt()}
-$$('#trx th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;sortD=sortK==k?-sortD:-1;sortK=k;filt()});
+$$('#trx th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;sortD=sortK==k?-sortD:-1;sortK=k;$$('#trx th').forEach(x=>delete x.dataset.so);th.dataset.so=sortD>0?'a':'d';filt()});
+$('#trx th[data-k=Date]').dataset.so='d';
 $('#tB').onclick=e=>{const tr=e.target.closest('tr');if(tr)edit(tr.dataset.id)};
 function edit(id){editId=id||null;const r=D.find(x=>x.ID==id)||{Date:new Date().toISOString().slice(0,10),Currency:'THB',Type:'Personal',Payment:'Cash'};
  const f=$('#frm');F9.forEach(c=>f[c].value=r[c]??'');$('#dlT').textContent=id?'แก้ไข Transaction':'เพิ่ม Transaction';$('#bDel').style.display=$('#bDup').style.display=id?'':'none';$('#dlg').showModal()}

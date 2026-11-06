@@ -73,3 +73,5 @@ dialog{width:min(440px,94vw);max-height:90vh;overflow:auto}
  .card h3{font-size:14px}
 }
 @media(max-width:400px){.kpis{grid-template-columns:1fr}}
+
+th{cursor:pointer;user-select:none}th:hover{color:var(--ac)}th[data-so=a]::after{content:' ▲';color:var(--ac)}th[data-so=d]::after{content:' ▼';color:var(--ac)}
